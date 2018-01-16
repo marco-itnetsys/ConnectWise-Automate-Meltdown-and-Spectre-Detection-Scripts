@@ -166,14 +166,15 @@
         $kvaShadowPcidEnabled = $false
         $automateFinalOutput.kvaspcide = $false
 
-        $cpu = Get-WmiObject Win32_Processor
+        $cpuManufacturer = Get-WmiObject Win32_Processor | Select -ExpandProperty "Manufacturer"
+        $cpuDescription = Get-WmiObject Win32_Processor | Select -ExpandProperty "Description"
 
-        if ($cpu.Manufacturer -eq "AuthenticAMD") {
+        if ($cpuManufacturer -eq "AuthenticAMD") {
             $kvaShadowRequired = $false
         }
-        elseif ($cpu.Manufacturer -eq "GenuineIntel") {
+        elseif ($cpuManufacturer -eq "GenuineIntel") {
             $regex = [regex]'Family (\d+) Model (\d+) Stepping (\d+)'
-            $result = $regex.Match($cpu.Description)
+            $result = $regex.Match($cpuDescription)
             
             if ($result.Success) {
                 $family = [System.UInt32]$result.Groups[1].Value
@@ -193,7 +194,7 @@
             }
         }
         else {
-            throw ("Unsupported processor manufacturer: {0}" -f $cpu.Manufacturer)
+            throw ("Unsupported processor manufacturer: {0}" -f $cpuManufacturer)
         }
 
         [System.UInt32]$systemInformationClass = 196
